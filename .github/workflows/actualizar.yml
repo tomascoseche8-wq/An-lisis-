@@ -2,8 +2,6 @@ name: Actualizar sitio Mundial 2026
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: '0 */2 * * *'
 
 jobs:
   build:
