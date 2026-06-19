@@ -101,7 +101,7 @@ def main():
     api_key = os.environ.get("API_TOKEN", "").strip()
 
     if not api_key:
-        print("⚠ FOOTBALL_DATA_API_KEY no definida — omitiendo actualización de marcadores.")
+        print("⚠ API_TOKEN no definida — omitiendo actualización de marcadores.")
         # Crear archivo vacío para que generate.py no falle
         if not os.path.exists(OUT):
             save({})
