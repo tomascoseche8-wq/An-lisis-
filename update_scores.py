@@ -5,7 +5,7 @@ update_scores.py — consulta la API de football-data.org y escribe
 src/scores_live.json con todos los marcadores ya oficiales del
 Mundial 2026. generate.py luego fusiona esos datos con el sitio.
 
-Requiere la variable de entorno API_TOKEN.
+Requiere la variable de entorno FOOTBALL_DATA_API_KEY.
 Obtené tu clave gratuita en: https://www.football-data.org/client/register
 (plan Free: 10 llamadas/min, suficiente para este uso)
 """
@@ -98,10 +98,10 @@ def save(scores: dict) -> None:
 
 
 def main():
-    api_key = os.environ.get("API_TOKEN", "").strip()
+    api_key = os.environ.get("FOOTBALL_DATA_API_KEY", "").strip()
 
     if not api_key:
-        print("⚠ API_TOKEN no definida — omitiendo actualización de marcadores.")
+        print("⚠ FOOTBALL_DATA_API_KEY no definida — omitiendo actualización de marcadores.")
         # Crear archivo vacío para que generate.py no falle
         if not os.path.exists(OUT):
             save({})
