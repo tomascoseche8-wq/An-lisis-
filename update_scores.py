@@ -5,7 +5,7 @@ update_scores.py — consulta la API de football-data.org y escribe
 src/scores_live.json con todos los marcadores ya oficiales del
 Mundial 2026. generate.py luego fusiona esos datos con el sitio.
 
-Requiere la variable de entorno FOOTBALL_DATA_API_KEY.
+Requiere la variable de entorno API_TOKEN.
 Obtené tu clave gratuita en: https://www.football-data.org/client/register
 (plan Free: 10 llamadas/min, suficiente para este uso)
 """
