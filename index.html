@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Mundial 2026 · Fase de Grupos · Análisis de Apuestas</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap');
+
+  :root {
+    --bg:       #0b0f14;
+    --surface:  #131920;
+    --card:     #19222d;
+    --border:   #1f2d3d;
+    --accent:   #00e5a0;
+    --warn:     #f0b429;
+    --danger:   #f05252;
+    --text:     #e8edf3;
+    --muted:    #6b7f96;
+    --home:     #3fb6e0;
+    --away:     #f0b429;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  nav {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 18px;
+    color: var(--accent);
+    letter-spacing: -0.5px;
+    margin-right: auto;
+    text-decoration: none;
+  }
+  nav a { color: var(--muted); text-decoration: none; font-size: 13px; font-weight: 500; transition: color .2s; }
+  nav a:hover { color: var(--text); }
+
+  .hero {
+    background: linear-gradient(160deg, #0f1922 0%, #0b1420 60%, #091018 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 40px 24px 32px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 60% 50% at 50% 100%, rgba(0,229,160,.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .competition-tag {
+    display: inline-block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px; font-weight: 500;
+    color: var(--accent);
+    background: rgba(0,229,160,.1);
+    border: 1px solid rgba(0,229,160,.25);
+    border-radius: 4px; padding: 3px 10px; margin-bottom: 20px;
+    letter-spacing: .5px; text-transform: uppercase;
+  }
+  .matchup { display: flex; align-items: center; justify-content: center; gap: 24px; margin-bottom: 12px; }
+  .team { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .team-flag { font-size: 52px; line-height: 1; }
+  .team-name { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 22px; letter-spacing: -0.5px; }
+  .team-name.home { color: var(--home); }
+  .team-name.away { color: var(--away); }
+  .vs { font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: var(--muted); padding: 0 8px; }
+  .match-meta { font-size: 13px; color: var(--muted); margin-top: 8px; }
+  .match-meta span { color: var(--text); }
+
+  .disclaimer {
+    background: rgba(240,180,41,.07);
+    border: 1px solid rgba(240,180,41,.2);
+    border-radius: 8px; margin: 16px 24px; padding: 10px 16px;
+    font-size: 12px; color: #c9a23a; display: flex; gap: 10px; align-items: flex-start;
+  }
+  .disclaimer-icon { flex-shrink: 0; margin-top: 1px; }
+
+  .content { max-width: 820px; margin: 0 auto; padding: 24px 16px 60px; display: flex; flex-direction: column; gap: 20px; }
+
+  .section-label {
+    font-family: 'IBM Plex Mono', monospace; font-size: 10px; font-weight: 500;
+    letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted);
+    margin-bottom: 12px; display: flex; align-items: center; gap: 10px;
+  }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 18px 20px; }
+  .card-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 15px; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+  .card-title .icon { font-size: 16px; }
+
+  .result-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+  .result-cell { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 14px 10px; text-align: center; }
+  .result-cell.highlight { border-color: var(--accent); background: rgba(0,229,160,.06); }
+  .result-label { font-size: 11px; color: var(--muted); margin-bottom: 4px; font-weight: 500; }
+  .result-pct { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 26px; }
+  .result-pct.high { color: var(--accent); }
+  .result-pct.mid  { color: var(--warn); }
+  .result-pct.low  { color: var(--muted); }
+  .result-odd { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--muted); margin-top: 3px; }
+
+  .market-row { display: flex; flex-direction: column; gap: 10px; }
+  .mrow { display: flex; flex-direction: column; gap: 4px; }
+  .mrow-header { display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
+  .mrow-name { font-weight: 500; }
+  .mrow-right { display: flex; align-items: center; gap: 10px; font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--muted); }
+  .mrow-pct { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 15px; color: var(--text); min-width: 40px; text-align: right; }
+  .bar-track { height: 6px; background: var(--border); border-radius: 99px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 99px; background: var(--accent); transition: width .8s cubic-bezier(.4,0,.2,1); }
+  .bar-fill.warn { background: var(--warn); }
+  .bar-fill.danger { background: var(--danger); }
+  .bar-fill.mid { background: #5b8af0; }
+
+  .corners-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 16px; }
+  .corner-cell { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 14px 14px; display: flex; flex-direction: column; gap: 2px; }
+  .corner-cell.hot { border-color: var(--accent); }
+  .corner-label { font-size: 11px; color: var(--muted); }
+  .corner-value { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 22px; }
+  .corner-value.accent { color: var(--accent); }
+  .corner-value.warn   { color: var(--warn); }
+  .corner-sub { font-size: 11px; color: var(--muted); }
+
+  .pill-list { display: flex; flex-wrap: wrap; gap: 8px; }
+  .pill { display: flex; align-items: center; gap: 6px; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 7px 12px; font-size: 13px; }
+
+  .cards-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+
+  .temporal-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; margin-bottom: 8px; }
+  .temp-cell { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 8px 4px 6px; text-align: center; position: relative; overflow: hidden; }
+  .temp-fill { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,229,160,.12); }
+  .temp-label { font-family: 'IBM Plex Mono', monospace; font-size: 9px; color: var(--muted); margin-bottom: 4px; position: relative; z-index: 1; }
+  .temp-pct { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 13px; color: var(--accent); position: relative; z-index: 1; }
+
+  .scores-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .score-cell { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px 10px; text-align: center; }
+  .score-cell.top { border-color: var(--accent); }
+  .score-result { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 18px; margin-bottom: 3px; }
+  .score-pct { font-size: 12px; color: var(--accent); font-family: 'IBM Plex Mono', monospace; }
+
+  .confidence-wrap { display: flex; flex-direction: column; gap: 6px; }
+  .confidence-bar-track { height: 10px; background: var(--border); border-radius: 99px; overflow: hidden; }
+  .confidence-bar-fill { height: 100%; border-radius: 99px; background: linear-gradient(90deg, #00e5a0, #5b8af0); }
+  .confidence-labels { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); font-family: 'IBM Plex Mono', monospace; }
+
+  .cs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .cs-cell { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 14px; text-align: center; }
+  .cs-flag { font-size: 28px; margin-bottom: 4px; }
+  .cs-team { font-size: 11px; color: var(--muted); margin-bottom: 6px; }
+  .cs-pct { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 24px; }
+
+  .dc-list { display: flex; flex-direction: column; gap: 10px; }
+  .dc-row { display: flex; align-items: center; gap: 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; }
+  .dc-label { flex: 1; font-size: 13px; font-weight: 500; }
+  .dc-pct { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 16px; min-width: 44px; text-align: right; }
+  .dc-pct.high { color: var(--accent); }
+  .dc-pct.mid  { color: var(--warn); }
+  .dc-pct.low  { color: var(--muted); }
+  .dc-bar { width: 80px; }
+
+  .profile-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .profile-cell { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 14px; }
+  .profile-head { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .profile-flag { font-size: 26px; }
+  .profile-name { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 15px; }
+  .profile-rank { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--muted); margin-left: auto; }
+  .profile-row { font-size: 12px; color: var(--muted); margin-bottom: 6px; line-height: 1.5; }
+  .profile-row b { color: var(--text); font-weight: 600; }
+  .profile-recent { font-size: 12px; color: var(--text); background: rgba(255,255,255,.03); border-radius: 6px; padding: 8px 10px; margin-top: 8px; }
+
+  .sim-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+  .sim-cell { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 14px; text-align: center; }
+  .sim-label { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+  .sim-value { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 20px; color: var(--accent); }
+
+  /* ── Resultado real (partidos ya jugados) ── */
+  .real-result-banner {
+    background: linear-gradient(135deg, rgba(0,229,160,.10) 0%, rgba(91,138,240,.08) 100%);
+    border: 1px solid rgba(0,229,160,.35); border-radius: 10px;
+    padding: 16px 20px; text-align: center;
+  }
+  .real-result-tag {
+    font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 1.5px;
+    text-transform: uppercase; color: var(--accent); margin-bottom: 8px;
+  }
+  .real-result-score {
+    font-family: 'Syne', sans-serif; font-weight: 800; font-size: 42px;
+    color: var(--text); line-height: 1; margin-bottom: 4px;
+  }
+  .real-result-sub { font-size: 12px; color: var(--muted); }
+
+  /* ── Clima ── */
+  .weather-row {
+    display: flex; align-items: center; gap: 14px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 12px 16px;
+  }
+  .weather-icon { font-size: 28px; flex-shrink: 0; }
+  .weather-main { flex: 1; }
+  .weather-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 14px; margin-bottom: 2px; }
+  .weather-note { font-size: 12px; color: var(--muted); }
+  .weather-pill {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 600;
+    padding: 4px 10px; border-radius: 20px; flex-shrink: 0;
+  }
+  .weather-pill.hot { background: rgba(240,82,82,.15); color: #f05252; border: 1px solid rgba(240,82,82,.3); }
+  .weather-pill.warm { background: rgba(240,180,41,.12); color: var(--warn); border: 1px solid rgba(240,180,41,.3); }
+  .weather-pill.cool { background: rgba(0,229,160,.10); color: var(--accent); border: 1px solid rgba(0,229,160,.3); }
+
+  /* ── H2H ── */
+  .h2h-box {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 14px 16px;
+  }
+  .h2h-label { font-size: 11px; color: var(--muted); margin-bottom: 6px; font-family: 'IBM Plex Mono', monospace; text-transform: uppercase; letter-spacing: 1px; }
+  .h2h-text { font-size: 13px; color: var(--text); line-height: 1.6; }
+
+  footer { background: var(--surface); border-top: 1px solid var(--border); text-align: center; padding: 16px; font-size: 11px; color: var(--muted); }
+
+  /* ── NAV: volver + menus desplegables ── */
+  nav { flex-wrap: wrap; row-gap: 8px; }
+  .back-btn { display: flex; align-items: center; gap: 4px; color: var(--muted); text-decoration: none; font-size: 13px; font-weight: 500; }
+  .back-btn:hover { color: var(--text); }
+  .nav-dd { position: relative; }
+  .nav-dd summary {
+    list-style: none; cursor: pointer; color: var(--muted);
+    font-size: 13px; font-weight: 500; padding: 4px 2px; user-select: none;
+  }
+  .nav-dd summary::-webkit-details-marker { display: none; }
+  .nav-dd summary::after { content: ' ▾'; font-size: 9px; }
+  .nav-dd[open] summary, .nav-dd summary:hover { color: var(--text); }
+  .nav-dd-panel {
+    position: absolute; top: 26px; left: 0;
+    background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+    padding: 10px; min-width: 250px; max-height: 380px; overflow-y: auto;
+    box-shadow: 0 12px 30px rgba(0,0,0,.5); z-index: 300;
+  }
+  .nav-dd-panel.wide { min-width: 280px; }
+  .nav-group-item { display: flex; flex-direction: column; padding: 6px 8px; border-radius: 6px; text-decoration: none; }
+  .nav-group-item:hover { background: var(--surface); }
+  .nav-group-item .g-name { color: var(--text); font-family: 'Syne', sans-serif; font-weight: 700; font-size: 13px; }
+  .nav-group-item .g-countries { font-size: 11px; color: var(--muted); margin-top: 2px; line-height: 1.5; }
+  .nav-match-header {
+    font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--accent);
+    text-transform: uppercase; letter-spacing: 1px; margin: 10px 4px 4px;
+  }
+  .nav-match-header:first-child { margin-top: 2px; }
+  .nav-match-item { display: block; padding: 5px 8px; border-radius: 6px; color: var(--text); text-decoration: none; font-size: 12px; }
+  .nav-match-item:hover { background: var(--surface); }
+  .nav-match-item .d { color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 10px; margin-right: 6px; }
+
+  @media (max-width: 480px) {
+    .result-grid { grid-template-columns: 1fr; }
+    .corners-grid { grid-template-columns: 1fr; }
+    .cards-row { grid-template-columns: 1fr; }
+    .scores-grid { grid-template-columns: repeat(2,1fr); }
+    .temporal-grid { grid-template-columns: repeat(3,1fr); }
+    .cs-grid { grid-template-columns: 1fr 1fr; }
+    .profile-grid { grid-template-columns: 1fr; }
+    .sim-grid { grid-template-columns: 1fr 1fr; }
+    .team-flag { font-size: 36px; }
+    .team-name { font-size: 18px; }
+    .nav-dd-panel { min-width: 200px; max-width: 86vw; }
+  }
+
+  .match-list { display: flex; flex-direction: column; gap: 6px; }
+  .match-row {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+    padding: 10px 12px; text-decoration: none; color: var(--text); font-size: 13px;
+    transition: border-color .15s;
+  }
+  .match-row:hover { border-color: var(--accent); }
+  .match-row-date { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--muted); min-width: 64px; line-height: 1.4; }
+  .match-row-teams { flex: 1; font-weight: 600; font-family: 'Syne', sans-serif; font-size: 14px; }
+  .match-row-teams .vs { color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-weight: 400; font-size: 11px; }
+  .match-row-jor { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--muted); background: rgba(255,255,255,.04); border-radius: 4px; padding: 2px 6px; }
+  .index-hero-stats { display: flex; justify-content: center; margin: 18px auto 0; max-width: 420px; }
+  .index-stat { text-align: center; margin: 0 14px; }
+  .index-stat-num { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 22px; color: var(--accent); }
+  .index-stat-label { font-size: 11px; color: var(--muted); }
+  .group-nav { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin: 16px auto; max-width: 820px; padding: 0 16px; }
+  .group-nav a {
+    font-family: 'IBM Plex Mono', monospace; font-size: 12px; font-weight: 600; color: var(--text);
+    background: var(--card); border: 1px solid var(--border); border-radius: 6px; padding: 5px 11px; text-decoration: none;
+  }
+  .group-nav a:hover { border-color: var(--accent); color: var(--accent); }
+</style>
+</head>
+<body>
+<nav>
+  <a class="logo" href="index.html">⚽ BetStats</a>
+  
+  <details class="nav-dd">
+    <summary>Fase de grupos</summary>
+    <div class="nav-dd-panel"><a class="nav-group-item" href="#grupo-A"><span class="g-name">Grupo A</span><span class="g-countries">México, Sudáfrica, Corea del Sur, Chequia</span></a><a class="nav-group-item" href="#grupo-B"><span class="g-name">Grupo B</span><span class="g-countries">Canadá, Bosnia y Herzegovina, Catar, Suiza</span></a><a class="nav-group-item" href="#grupo-C"><span class="g-name">Grupo C</span><span class="g-countries">Brasil, Marruecos, Haití, Escocia</span></a><a class="nav-group-item" href="#grupo-D"><span class="g-name">Grupo D</span><span class="g-countries">Estados Unidos, Paraguay, Australia, Turquía</span></a><a class="nav-group-item" href="#grupo-E"><span class="g-name">Grupo E</span><span class="g-countries">Alemania, Curazao, Costa de Marfil, Ecuador</span></a><a class="nav-group-item" href="#grupo-F"><span class="g-name">Grupo F</span><span class="g-countries">Países Bajos, Japón, Suecia, Túnez</span></a><a class="nav-group-item" href="#grupo-G"><span class="g-name">Grupo G</span><span class="g-countries">Bélgica, Egipto, Irán, Nueva Zelanda</span></a><a class="nav-group-item" href="#grupo-H"><span class="g-name">Grupo H</span><span class="g-countries">España, Cabo Verde, Arabia Saudita, Uruguay</span></a><a class="nav-group-item" href="#grupo-I"><span class="g-name">Grupo I</span><span class="g-countries">Francia, Senegal, Irak, Noruega</span></a><a class="nav-group-item" href="#grupo-J"><span class="g-name">Grupo J</span><span class="g-countries">Argentina, Argelia, Austria, Jordania</span></a><a class="nav-group-item" href="#grupo-K"><span class="g-name">Grupo K</span><span class="g-countries">Portugal, R.D. del Congo, Uzbekistán, Colombia</span></a><a class="nav-group-item" href="#grupo-L"><span class="g-name">Grupo L</span><span class="g-countries">Inglaterra, Croacia, Ghana, Panamá</span></a></div>
+  </details>
+  <details class="nav-dd">
+    <summary>Partidos</summary>
+    <div class="nav-dd-panel wide"><div class="nav-match-header">Grupo A</div><a class="nav-match-item" href="partidos/mex-vs-rsa.html"><span class="d">11/06</span>MEX vs RSA</a><a class="nav-match-item" href="partidos/kor-vs-cze.html"><span class="d">11/06</span>KOR vs CZE</a><a class="nav-match-item" href="partidos/cze-vs-rsa.html"><span class="d">18/06</span>CZE vs RSA</a><a class="nav-match-item" href="partidos/mex-vs-kor.html"><span class="d">18/06</span>MEX vs KOR</a><a class="nav-match-item" href="partidos/cze-vs-mex.html"><span class="d">24/06</span>CZE vs MEX</a><a class="nav-match-item" href="partidos/rsa-vs-kor.html"><span class="d">24/06</span>RSA vs KOR</a><div class="nav-match-header">Grupo B</div><a class="nav-match-item" href="partidos/can-vs-bih.html"><span class="d">12/06</span>CAN vs BIH</a><a class="nav-match-item" href="partidos/qat-vs-sui.html"><span class="d">13/06</span>QAT vs SUI</a><a class="nav-match-item" href="partidos/sui-vs-bih.html"><span class="d">18/06</span>SUI vs BIH</a><a class="nav-match-item" href="partidos/can-vs-qat.html"><span class="d">18/06</span>CAN vs QAT</a><a class="nav-match-item" href="partidos/sui-vs-can.html"><span class="d">24/06</span>SUI vs CAN</a><a class="nav-match-item" href="partidos/bih-vs-qat.html"><span class="d">24/06</span>BIH vs QAT</a><div class="nav-match-header">Grupo C</div><a class="nav-match-item" href="partidos/bra-vs-mar.html"><span class="d">13/06</span>BRA vs MAR</a><a class="nav-match-item" href="partidos/hai-vs-sco.html"><span class="d">13/06</span>HAI vs SCO</a><a class="nav-match-item" href="partidos/sco-vs-mar.html"><span class="d">19/06</span>SCO vs MAR</a><a class="nav-match-item" href="partidos/bra-vs-hai.html"><span class="d">19/06</span>BRA vs HAI</a><a class="nav-match-item" href="partidos/sco-vs-bra.html"><span class="d">24/06</span>SCO vs BRA</a><a class="nav-match-item" href="partidos/mar-vs-hai.html"><span class="d">24/06</span>MAR vs HAI</a><div class="nav-match-header">Grupo D</div><a class="nav-match-item" href="partidos/usa-vs-par.html"><span class="d">12/06</span>USA vs PAR</a><a class="nav-match-item" href="partidos/aus-vs-tur.html"><span class="d">13/06</span>AUS vs TUR</a><a class="nav-match-item" href="partidos/usa-vs-aus.html"><span class="d">19/06</span>USA vs AUS</a><a class="nav-match-item" href="partidos/tur-vs-par.html"><span class="d">19/06</span>TUR vs PAR</a><a class="nav-match-item" href="partidos/tur-vs-usa.html"><span class="d">25/06</span>TUR vs USA</a><a class="nav-match-item" href="partidos/par-vs-aus.html"><span class="d">25/06</span>PAR vs AUS</a><div class="nav-match-header">Grupo E</div><a class="nav-match-item" href="partidos/ger-vs-cuw.html"><span class="d">14/06</span>GER vs CUW</a><a class="nav-match-item" href="partidos/civ-vs-ecu.html"><span class="d">14/06</span>CIV vs ECU</a><a class="nav-match-item" href="partidos/ger-vs-civ.html"><span class="d">20/06</span>GER vs CIV</a><a class="nav-match-item" href="partidos/ecu-vs-cuw.html"><span class="d">20/06</span>ECU vs CUW</a><a class="nav-match-item" href="partidos/ecu-vs-ger.html"><span class="d">25/06</span>ECU vs GER</a><a class="nav-match-item" href="partidos/cuw-vs-civ.html"><span class="d">25/06</span>CUW vs CIV</a><div class="nav-match-header">Grupo F</div><a class="nav-match-item" href="partidos/ned-vs-jpn.html"><span class="d">14/06</span>NED vs JPN</a><a class="nav-match-item" href="partidos/swe-vs-tun.html"><span class="d">14/06</span>SWE vs TUN</a><a class="nav-match-item" href="partidos/ned-vs-swe.html"><span class="d">20/06</span>NED vs SWE</a><a class="nav-match-item" href="partidos/tun-vs-jpn.html"><span class="d">20/06</span>TUN vs JPN</a><a class="nav-match-item" href="partidos/jpn-vs-swe.html"><span class="d">25/06</span>JPN vs SWE</a><a class="nav-match-item" href="partidos/tun-vs-ned.html"><span class="d">25/06</span>TUN vs NED</a><div class="nav-match-header">Grupo G</div><a class="nav-match-item" href="partidos/bel-vs-egy.html"><span class="d">15/06</span>BEL vs EGY</a><a class="nav-match-item" href="partidos/irn-vs-nzl.html"><span class="d">15/06</span>IRN vs NZL</a><a class="nav-match-item" href="partidos/bel-vs-irn.html"><span class="d">21/06</span>BEL vs IRN</a><a class="nav-match-item" href="partidos/nzl-vs-egy.html"><span class="d">21/06</span>NZL vs EGY</a><a class="nav-match-item" href="partidos/egy-vs-irn.html"><span class="d">26/06</span>EGY vs IRN</a><a class="nav-match-item" href="partidos/nzl-vs-bel.html"><span class="d">26/06</span>NZL vs BEL</a><div class="nav-match-header">Grupo H</div><a class="nav-match-item" href="partidos/esp-vs-cpv.html"><span class="d">15/06</span>ESP vs CPV</a><a class="nav-match-item" href="partidos/ksa-vs-uru.html"><span class="d">15/06</span>KSA vs URU</a><a class="nav-match-item" href="partidos/esp-vs-ksa.html"><span class="d">21/06</span>ESP vs KSA</a><a class="nav-match-item" href="partidos/uru-vs-cpv.html"><span class="d">21/06</span>URU vs CPV</a><a class="nav-match-item" href="partidos/cpv-vs-ksa.html"><span class="d">26/06</span>CPV vs KSA</a><a class="nav-match-item" href="partidos/uru-vs-esp.html"><span class="d">26/06</span>URU vs ESP</a><div class="nav-match-header">Grupo I</div><a class="nav-match-item" href="partidos/fra-vs-sen.html"><span class="d">16/06</span>FRA vs SEN</a><a class="nav-match-item" href="partidos/irq-vs-nor.html"><span class="d">16/06</span>IRQ vs NOR</a><a class="nav-match-item" href="partidos/fra-vs-irq.html"><span class="d">22/06</span>FRA vs IRQ</a><a class="nav-match-item" href="partidos/nor-vs-sen.html"><span class="d">22/06</span>NOR vs SEN</a><a class="nav-match-item" href="partidos/nor-vs-fra.html"><span class="d">26/06</span>NOR vs FRA</a><a class="nav-match-item" href="partidos/sen-vs-irq.html"><span class="d">26/06</span>SEN vs IRQ</a><div class="nav-match-header">Grupo J</div><a class="nav-match-item" href="partidos/arg-vs-alg.html"><span class="d">16/06</span>ARG vs ALG</a><a class="nav-match-item" href="partidos/aut-vs-jor.html"><span class="d">16/06</span>AUT vs JOR</a><a class="nav-match-item" href="partidos/arg-vs-aut.html"><span class="d">22/06</span>ARG vs AUT</a><a class="nav-match-item" href="partidos/jor-vs-alg.html"><span class="d">22/06</span>JOR vs ALG</a><a class="nav-match-item" href="partidos/alg-vs-aut.html"><span class="d">27/06</span>ALG vs AUT</a><a class="nav-match-item" href="partidos/jor-vs-arg.html"><span class="d">27/06</span>JOR vs ARG</a><div class="nav-match-header">Grupo K</div><a class="nav-match-item" href="partidos/por-vs-cod.html"><span class="d">17/06</span>POR vs COD</a><a class="nav-match-item" href="partidos/uzb-vs-col.html"><span class="d">17/06</span>UZB vs COL</a><a class="nav-match-item" href="partidos/por-vs-uzb.html"><span class="d">23/06</span>POR vs UZB</a><a class="nav-match-item" href="partidos/col-vs-cod.html"><span class="d">23/06</span>COL vs COD</a><a class="nav-match-item" href="partidos/col-vs-por.html"><span class="d">27/06</span>COL vs POR</a><a class="nav-match-item" href="partidos/cod-vs-uzb.html"><span class="d">27/06</span>COD vs UZB</a><div class="nav-match-header">Grupo L</div><a class="nav-match-item" href="partidos/eng-vs-cro.html"><span class="d">17/06</span>ENG vs CRO</a><a class="nav-match-item" href="partidos/gha-vs-pan.html"><span class="d">17/06</span>GHA vs PAN</a><a class="nav-match-item" href="partidos/eng-vs-gha.html"><span class="d">23/06</span>ENG vs GHA</a><a class="nav-match-item" href="partidos/pan-vs-cro.html"><span class="d">23/06</span>PAN vs CRO</a><a class="nav-match-item" href="partidos/pan-vs-eng.html"><span class="d">27/06</span>PAN vs ENG</a><a class="nav-match-item" href="partidos/cro-vs-gha.html"><span class="d">27/06</span>CRO vs GHA</a></div>
+  </details>
+</nav>
+<div class="hero">
+  <div class="competition-tag">Mundial 2026 · Fase de Grupos</div>
+  <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:26px">Calendario y análisis de los 72 partidos</div>
+  <div class="match-meta" style="margin-top:8px">Modelo propio: Elo (ranking FIFA 11-jun-2026) + Poisson bivariado + Monte Carlo (50.000 simulaciones) para cada partido</div>
+  <div class="index-hero-stats">
+    <div class="index-stat"><div class="index-stat-num">48</div><div class="index-stat-label">equipos</div></div>
+    <div class="index-stat"><div class="index-stat-num">12</div><div class="index-stat-label">grupos</div></div>
+    <div class="index-stat"><div class="index-stat-num">72</div><div class="index-stat-label">partidos</div></div>
+    <div class="index-stat"><div class="index-stat-num">3</div><div class="index-stat-label">países anfitriones</div></div>
+  </div>
+</div>
+<div class="disclaimer" style="max-width:820px;margin:16px auto;">
+  <span class="disclaimer-icon">⚠️</span>
+  <span>Análisis estadístico de entretenimiento generado por un modelo propio a partir de datos reales (ranking FIFA, historial mundialista, vía de clasificación y resultados ya disputados). No es asesoría financiera ni de apuestas. Juega con responsabilidad.</span>
+</div>
+<div class="group-nav" id="grupos"><a href="#grupo-A">A</a> <a href="#grupo-B">B</a> <a href="#grupo-C">C</a> <a href="#grupo-D">D</a> <a href="#grupo-E">E</a> <a href="#grupo-F">F</a> <a href="#grupo-G">G</a> <a href="#grupo-H">H</a> <a href="#grupo-I">I</a> <a href="#grupo-J">J</a> <a href="#grupo-K">K</a> <a href="#grupo-L">L</a></div>
+<div class="content">
+  <div class="card" id="grupo-A" style="margin-bottom:18px">
+      <div class="card-title"><span class="icon">🏟️</span> Grupo A</div>
+      <div class="pill-list" style="margin-bottom:14px"><div class="pill">🇲🇽 México <span style="color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:11px">#14</span></div><div class="pill">🇿🇦 Sudáfrica <span style="color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:11px">#60</span></div><div class="pill">🇰🇷 Corea del Sur <span style="color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:11px">#25</span></div><div class="pill">🇨🇿 Chequia <span style="color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:11px">#40</span></div></div>
+      <div class="match-list"><a class="match-row" href="partidos/mex-vs-rsa.html">
+        <div class="match-row-date">Jue 11 Jun<br>14:00</div>
+        <div class="match-row-teams">🇲🇽 MEX <span class="vs">vs</span> RSA 🇿🇦</div>
+        <div class="match-row-jor">J1</div>
+      </a><a class="match-row" href="partidos/kor-vs-cze.html">
+        <div class="match-row-date">Jue 11 Jun<br>21:00</div>
+        <div class="match-row-teams">🇰🇷 KOR <span class="vs">vs</span> CZE 🇨🇿</div>
+        <div class="match-row-jor">J1</div>
+      </a><a class="match-row" href="partidos/cze-vs-rsa.html">
+        <div class="match-row-date">Jue 18 Jun<br>11:00</div>
+        <div class="match-row-teams">🇨🇿 CZE <span class="vs">vs</span> RSA 🇿🇦</div>
+        <div class="match-row-jor">J2</div>
+      </a><a class="match-row" href="partidos/mex-vs-kor.html">
+        <div class="match-row-date">Jue 18 Jun<br>20:00</div>
+        <div class="match-row-teams">🇲🇽 MEX <span class="vs">vs</span> KOR 🇰🇷</div>
+        <div class="match-row-jor">J2</div>
+      </a><a class="match-row" href="partidos/cze-vs-mex.html">
+        <div class="match-row-date">Mié 24 Jun<br>20:00</div>
+        <div class="match-row-teams">🇨🇿 CZE <span class="vs">vs</span> MEX 🇲🇽</div>
+        <div class="match-row-jor">J3</div>
+      </a><a class="match-row" href="partidos/rsa-vs-kor.html">
+        <div class="match-row-date">Mié 24 Jun<br>20:00</div>
+        <div class="match-row-teams">🇿🇦 RSA <span class="vs">vs</span> KOR 🇰🇷</div>
+        <div class="match-row-jor">J3</div>
+      </a></div>
+    </div><div class="card" id="grupo-B" style="margin-bottom:18px">
+      <div class="card-title"><span class="icon">🏟️</span> Grupo B</div>
+      <div class="pill-list" style="margin-bottom:14px"><div class="pill">🇨🇦 Canadá <span style="color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:11px">#30</span></div><div class="pill">🇧🇦 Bosnia y Herzegovina <span style="color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:11px">#64</span></div><div class="pill">🇶🇦 Catar <span style="color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:11px">#56</span></div><div class="pill">🇨🇭 Suiza <span style="color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:11px">#19</span></div></div>
+      <div class="match-list"><a class="match-row" href="partidos/can-vs-bih.html">
+        <div class="match-row-date">Vie 12 Jun<br>14:00</div>
+        <div class="match-row-teams">🇨🇦 CAN <span class="vs">vs</span> BIH 🇧🇦</div>
+        <div class="match-row-jor">J1</div>
+      </a><a class="match-row" href="partidos/qat-vs-sui.html">
+        <div class="match-row-date">Sáb 13 Jun<br>14:00</div>
+        <div class="match-row-teams">🇶🇦 QAT <span class="vs">vs</span> SUI 🇨🇭</div>
+        <div class="match-row-jor">J1</div>
+      </a><a class="match-row" href="partidos/sui-vs-bih.html">
+        <div class="match-row-date">Jue 18 Jun<br>14:00</div>
+        <div class="match-row-teams">🇨🇭 SUI <span class="vs">vs</span> BIH 🇧🇦</div>
+        <div class="match-row-jor">J2</div>
+      </a><a class="match-row" href="partidos/can-vs-qat.html">
+        <div class="match-row-date">Jue 18 Jun<br>17:00</div>
+        <div class="match-row-teams">🇨🇦 CAN <span class="vs">vs</span> QAT 🇶🇦</div>
+        <div class="match-row-jor">J2</div>
+      </a><a class="match-row" href="partidos/sui-vs-can.html">
+        <div class="match-row-date">Mié 24 Jun<br>14:00</div>
+        <div class="match-row-teams">🇨🇭 SUI <span class="vs">vs</span> CAN 🇨🇦</div>
+        <div class="match-row-jor">J3</div>
+      </a><a class="match-row" href="partidos/bih-vs-qat.html">
+        <div class="match-row-date">Mié 24 Jun<br>14:00</div>
+        <div class="match-row-teams">🇧🇦 BIH <span class="vs">vs</span> QAT 🇶🇦</div>
+        <div class="match-row-jor">J3</div>
+      </a></div>
+    </div><div class="card" id="grupo-C" style="margin-bottom:18px">
+      <div class="card-title"><span class="icon">🏟️</span> Grupo C</div>
+      <div class="pill-list" style="margin-bottom:14px"><div class="pill">🇧🇷 Brasil <span style="color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:11px">#6</span></div><div class="pill">🇲🇦 Marruecos <span style="color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:11px">#7</span></div><div class="pill">🇭🇹 Haití <span style="color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:11px">#83</span></div><div class="pill">🏴 Escocia <span style="color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:11px">#42</span></div></div>
+      <div class="match-list"><a class="match-row" href="partidos/bra-vs-mar.html">
+        <div class="match-row-date">Sáb 13 Jun<br>17:00</div>
+        <div class="match-row-teams">🇧🇷 BRA <span class="vs">vs</span> MAR 🇲🇦</div>
+        <div class="match-row-jor">J1</div>
+      </a><a class="match-row" href="partidos/hai-vs-sco.html">
+        <div class="match-row-date">Sáb 13 Jun<br>20:00</div>
+        <div class="match-row-teams">🇭🇹 HAI <span class="vs">vs</span> SCO 🏴</div>
+        <div class="match-row-jor">J1</div>
+      </a><a class="match-row" href="partidos/sco-vs-mar.html">
+        <div class="match-row-date">Vie 19 Jun<br>17:00</div>
+        <div class="match-row-teams">🏴 SCO <span class="vs">vs</span> MAR 🇲🇦</div>
+        <div class="match-row-jor">J2</div>
+      </a><a class="match-row" href="partidos/bra-vs-hai.html">
+        <div class="match-row-date">Vie 19 Jun<br>20:00</div>
+        <div class="match-row-teams">🇧🇷 BRA <span class="vs">vs</span> HAI 🇭🇹</div>
+        <div class="match-row-jor">J2</div>
+      </a><a class="match-row" href="partidos/sco-vs-bra.html">
+        <div class="match-row-date">Mié 24 Jun<br>17:00</div>
+        <div class="match-row-teams">🏴 SCO <span class="vs">vs</span> BRA 🇧🇷</div>
+        <div class="match-row-jor">J3</div>
+      </a><a class="match-row" href="partidos/mar-vs-hai.html">
+        <div class="match-row-date">Mié 24 Jun<br>17:00</div>
+        <div class="match-row-teams">🇲🇦 MAR <span class="vs">vs</span> HAI 🇭🇹</div>
+        <div class="match-row-jor">J3</div>
+      </a></div>
+    </div><div class="card" id="grupo-D" style="margin-bottom:18px">
+      <div class="card-title"><span class="icon">🏟️</span> Grupo D</div>
+      <div class="pill-list" style="margin-bottom:14px"><div class="pill">🇺🇸 Estados Unidos <span style="color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:11px">#17</span></div><div class="pill">🇵🇾 Paraguay <span style="color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:11px">#41</span></div><div class="pill">🇦🇺 Australia <span style="color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:11px">#27</span></div><div class="pill">🇹🇷 Turquía <span style="color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:11px">#22</span></div></div>
+      <div class="match-list"><a class="match-row" href="partidos/usa-vs-par.html">
+        <div class="match-row-date">Vie 12 Jun<br>20:00</div>
+        <div class="match-row-teams">🇺🇸 USA <span class="vs">vs</span> PAR 🇵🇾</div>
+        <div class="match-row-jor">J1</div>
+      </a><a class="match-row" href="partidos/aus-vs-tur.html">
+        <div class="match-row-date">Sáb 13 Jun<br>23:00</div>
+        <div class="match-row-teams">🇦🇺 AUS <span class="vs">vs</span> TUR 🇹🇷</div>
+        <div class="match-row-jor">J1</div>
+      </a><a class="match-row" href="partidos/usa-vs-aus.html">
+        <div class="match-row-date">Vie 19 Jun<br>14:00</div>
+        <div class="match-row-teams">🇺🇸 USA <span class="vs">vs</span> AUS 🇦🇺</div>
+        <div class="match-row-jor">J2</div>
+      </a><a class="match-row" href="partidos/tur-vs-par.html">
+        <div class="match-row-date">Vie 19 Jun<br>23:00</div>
+        <div class="match-row-teams">🇹🇷 TUR <span class="vs">vs</span> PAR 🇵🇾</div>
+        <div class="match-row-jor">J2</div>
+      </a><a class="match-row" href="partidos/tur-vs-usa.html">
+        <div class="match-row-date">Jue 25 Jun<br>21:00</div>
+        <div class="match-row-teams">🇹🇷 TUR <span class="vs">vs</span> USA 🇺🇸</div>
+        <div class="match-row-jor">J3</div>
+      </a><a class="match-row" href="partidos/par-vs-aus.html">
+        <div class="match-row-date">Jue 25 Jun<br>21:00</div>
+        <div class="match-row-teams">🇵🇾 PAR <span class="vs">vs</span> AUS 🇦🇺</div>
+        <div class="match-row-jor">J3</div>
+      </a></div>
+    </div><div class="card" id="grupo-E" style="margin-bottom:18px">
+      <div class="card-title"><span class="icon">🏟️</span> Grupo E</div>
+      <div class="pill-list" style="margin-bottom:14px"><div class="pill">🇩🇪 Alemania <span style="color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:11px">#10</span></div><div class="pill">🇨🇼 Curazao <span style="color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:11px">#82</span></div><div class="pill">🇨🇮 Costa de Marfil <span style="color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:11px">#33</span></div><div class="pill">🇪🇨 Ecuador <span style="color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:11px">#23</span></div></div>
+      <div class="match-list"><a class="match-row" href="partidos/ger-vs-cuw.html">
+        <div class="match-row-date">Dom 14 Jun<br>12:00</div>
+        <div class="match-row-teams">🇩🇪 GER <span class="vs">vs</span> CUW 🇨🇼</div>
+        <div class="match-row-jor">J1</div>
+      </a><a class="match-row" href="partidos/civ-vs-ecu.html">
+        <div class="match-row-date">Dom 14 Jun<br>18:00</div>
+        <div class="match-row-teams">🇨🇮 CIV <span class="vs">vs</span> ECU 🇪🇨</div>
+        <div class="match-row-jor">J1</div>
+      </a><a class="match-row" href="partidos/ger-vs-civ.html">
+        <div class="match-row-date">Sáb 20 Jun<br>15:00</div>
+        <div class="match-row-teams">🇩🇪 GER <span class="vs">vs</span> CIV 🇨🇮</div>
+        <div class="match-row-jor">J2</div>
+      </a><a class="match-row" href="partidos/ecu-vs-cuw.html">
+        <div class="match-row-date">Sáb 20 Jun<br>19:00</div>
+        <div class="match-row-teams">🇪🇨 ECU <span class="vs">vs</span> CUW 🇨🇼</div>
+        <div class="match-row-jor">J2</div>
+      </a><a class="match-row" href="partidos/ecu-vs-ger.html">
+        <div class="match-row-date">Jue 25 Jun<br>15:00</div>
+        <div class="match-row-teams">🇪🇨 ECU <span class="vs">vs</span> GER 🇩🇪</div>
+        <div class="match-row-jor">J3</div>
+      </a><a class="match-row" href="partidos/cuw-vs-civ.html">
+        <div class="match-row-date">Jue 25 Jun<br>15:00</div>
+        <div class="match-row-teams">🇨🇼 CUW <span class="vs">vs</span> CIV 🇨🇮</div>
+        <div class="match-row-jor">J3</div>
+      </a></div>
+    </div><div class="card" id="grupo-F" style="margin-bottom:18px">
+      <div class="card-title"><span class="icon">🏟️</span> Grupo F</div>
+      <div class="pill-list" style="margin-bottom:14px"><div class="pill">🇳🇱 Países Bajos <span style="color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:11px">#8</span></div><div class="pill">🇯🇵 Japón <span style="color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:11px">#18</span></div><div class="pill">🇸🇪 Suecia <span style="color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:11px">#38</span></div><div class="pill">🇹🇳 Túnez <span style="color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:11px">#45</span></div></div>
+      <div class="match-list"><a class="match-row" href="partidos/ned-vs-jpn.html">
+        <div class="match-row-date">Dom 14 Jun<br>15:00</div>
+        <div class="match-row-teams">🇳🇱 NED <span class="vs">vs</span> JPN 🇯🇵</div>
+        <div class="match-row-jor">J1</div>
+      </a><a class="match-row" href="partidos/swe-vs-tun.html">
+        <div class="match-row-date">Dom 14 Jun<br>21:00</div>
+        <div class="match-row-teams">🇸🇪 SWE <span class="vs">vs</span> TUN 🇹🇳</div>
+        <div class="match-row-jor">J1</div>
+      </a><a class="match-row" href="partidos/ned-vs-swe.html">
+        <div class="match-row-date">Sáb 20 Jun<br>12:00</div>
+        <div class="match-row-teams">🇳🇱 NED <span class="vs">vs</span> SWE 🇸🇪</div>
+        <div class="match-row-jor">J2</div>
+      </a><a class="match-row" href="partidos/tun-vs-jpn.html">
+        <div class="match-row-date">Sáb 20 Jun<br>23:00</div>
+        <div class="match-row-teams">🇹🇳 TUN <span class="vs">vs</span> JPN 🇯🇵</div>
+        <div class="match-row-jor">J2</div>
+      </a><a class="match-row" href="partidos/jpn-vs-swe.html">
+        <div class="match-row-date">Jue 25 Jun<br>18:00</div>
+        <div class="match-row-teams">🇯🇵 JPN <span class="vs">vs</span> SWE 🇸🇪</div>
+        <div class="match-row-jor">J3</div>
+      </a><a class="match-row" href="partidos/tun-vs-ned.html">
+        <div class="match-row-date">Jue 25 Jun<br>18:00</div>
+        <div class="match-row-teams">🇹🇳 TUN <span class="vs">vs</span> NED 🇳🇱</div>
+        <div class="match-row-jor">J3</div>
+      </a></div>
+    </div><div class="card" id="grupo-G" style="margin-bottom:18px">
+      <div class="card-title"><span class="icon">🏟️</span> Grupo G</div>
+      <div class="pill-list" style="margin-bottom:14px"><div class="pill">🇧🇪 Bélgica <span style="color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:11px">#9</span></div><div class="pill">🇪🇬 Egipto <span style="color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:11px">#29</span></div><div class="pill">🇮🇷 Irán <span style="color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:11px">#20</span></div><div class="pill">🇳🇿 Nueva Zelanda <span style="color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:11px">#85</span></div></div>
+      <div class="match-list"><a class="match-row" href="partidos/bel-vs-egy.html">
+        <div class="match-row-date">Lun 15 Jun<br>14:00</div>
+        <div class="match-row-teams">🇧🇪 BEL <span class="vs">vs</span> EGY 🇪🇬</div>
+        <div class="match-row-jor">J1</div>
+      </a><a class="match-row" href="partidos/irn-vs-nzl.html">
+        <div class="match-row-date">Lun 15 Jun<br>20:00</div>
+        <div class="match-row-teams">🇮🇷 IRN <span class="vs">vs</span> NZL 🇳🇿</div>
+        <div class="match-row-jor">J1</div>
+      </a><a class="match-row" href="partidos/bel-vs-irn.html">
+        <div class="match-row-date">Dom 21 Jun<br>14:00</div>
+        <div class="match-row-teams">🇧🇪 BEL <span class="vs">vs</span> IRN 🇮🇷</div>
+        <div class="match-row-jor">J2</div>
+      </a><a class="match-row" href="partidos/nzl-vs-egy.html">
+        <div class="match-row-date">Dom 21 Jun<br>20:00</div>
+        <div class="match-row-teams">🇳🇿 NZL <span class="vs">vs</span> EGY 🇪🇬</div>
+        <div class="match-row-jor">J2</div>
+      </a><a class="match-row" href="partidos/egy-vs-irn.html">
+        <div class="match-row-date">Vie 26 Jun<br>22:00</div>
+        <div class="match-row-teams">🇪🇬 EGY <span class="vs">vs</span> IRN 🇮🇷</div>
+        <div class="match-row-jor">J3</div>
+      </a><a class="match-row" href="partidos/nzl-vs-bel.html">
+        <div class="match-row-date">Vie 26 Jun<br>22:00</div>
+        <div class="match-row-teams">🇳🇿 NZL <span class="vs">vs</span> BEL 🇧🇪</div>
+        <div class="match-row-jor">J3</div>
+      </a></div>
+    </div><div class="card" id="grupo-H" style="margin-bottom:18px">
+      <div class="card-title"><span class="icon">🏟️</span> Grupo H</div>
+      <div class="pill-list" style="margin-bottom:14px"><div class="pill">🇪🇸 España <span style="color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:11px">#2</span></div><div class="pill">🇨🇻 Cabo Verde <span style="color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:11px">#67</span></div><div class="pill">🇸🇦 Arabia Saudita <span style="color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:11px">#61</span></div><div class="pill">🇺🇾 Uruguay <span style="color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:11px">#16</span></div></div>
+      <div class="match-list"><a class="match-row" href="partidos/esp-vs-cpv.html">
+        <div class="match-row-date">Lun 15 Jun<br>11:00</div>
+        <div class="match-row-teams">🇪🇸 ESP <span class="vs">vs</span> CPV 🇨🇻</div>
+        <div class="match-row-jor">J1</div>
+      </a><a class="match-row" href="partidos/ksa-vs-uru.html">
+        <div class="match-row-date">Lun 15 Jun<br>17:00</div>
+        <div class="match-row-teams">🇸🇦 KSA <span class="vs">vs</span> URU 🇺🇾</div>
+        <div class="match-row-jor">J1</div>
+      </a><a class="match-row" href="partidos/esp-vs-ksa.html">
+        <div class="match-row-date">Dom 21 Jun<br>11:00</div>
+        <div class="match-row-teams">🇪🇸 ESP <span class="vs">vs</span> KSA 🇸🇦</div>
+        <div class="match-row-jor">J2</div>
+      </a><a class="match-row" href="partidos/uru-vs-cpv.html">
+        <div class="match-row-date">Dom 21 Jun<br>17:00</div>
+        <div class="match-row-teams">🇺🇾 URU <span class="vs">vs</span> CPV 🇨🇻</div>
+        <div class="match-row-jor">J2</div>
+      </a><a class="match-row" href="partidos/cpv-vs-ksa.html">
+        <div class="match-row-date">Vie 26 Jun<br>19:00</div>
+        <div class="match-row-teams">🇨🇻 CPV <span class="vs">vs</span> KSA 🇸🇦</div>
+        <div class="match-row-jor">J3</div>
+      </a><a class="match-row" href="partidos/uru-vs-esp.html">
+        <div class="match-row-date">Vie 26 Jun<br>19:00</div>
+        <div class="match-row-teams">🇺🇾 URU <span class="vs">vs</span> ESP 🇪🇸</div>
+        <div class="match-row-jor">J3</div>
+      </a></div>
+    </div><div class="card" id="grupo-I" style="margin-bottom:18px">
+      <div class="card-title"><span class="icon">🏟️</span> Grupo I</div>
+      <div class="pill-list" style="margin-bottom:14px"><div class="pill">🇫🇷 Francia <span style="color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:11px">#3</span></div><div class="pill">🇸🇳 Senegal <span style="color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:11px">#15</span></div><div class="pill">🇮🇶 Irak <span style="color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:11px">#57</span></div><div class="pill">🇳🇴 Noruega <span style="color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:11px">#31</span></div></div>
+      <div class="match-list"><a class="match-row" href="partidos/fra-vs-sen.html">
+        <div class="match-row-date">Mar 16 Jun<br>14:00</div>
+        <div class="match-row-teams">🇫🇷 FRA <span class="vs">vs</span> SEN 🇸🇳</div>
+        <div class="match-row-jor">J1</div>
+      </a><a class="match-row" href="partidos/irq-vs-nor.html">
+        <div class="match-row-date">Mar 16 Jun<br>17:00</div>
+        <div class="match-row-teams">🇮🇶 IRQ <span class="vs">vs</span> NOR 🇳🇴</div>
+        <div class="match-row-jor">J1</div>
+      </a><a class="match-row" href="partidos/fra-vs-irq.html">
+        <div class="match-row-date">Lun 22 Jun<br>16:00</div>
+        <div class="match-row-teams">🇫🇷 FRA <span class="vs">vs</span> IRQ 🇮🇶</div>
+        <div class="match-row-jor">J2</div>
+      </a><a class="match-row" href="partidos/nor-vs-sen.html">
+        <div class="match-row-date">Lun 22 Jun<br>19:00</div>
+        <div class="match-row-teams">🇳🇴 NOR <span class="vs">vs</span> SEN 🇸🇳</div>
+        <div class="match-row-jor">J2</div>
+      </a><a class="match-row" href="partidos/nor-vs-fra.html">
+        <div class="match-row-date">Vie 26 Jun<br>14:00</div>
+        <div class="match-row-teams">🇳🇴 NOR <span class="vs">vs</span> FRA 🇫🇷</div>
+        <div class="match-row-jor">J3</div>
+      </a><a class="match-row" href="partidos/sen-vs-irq.html">
+        <div class="match-row-date">Vie 26 Jun<br>14:00</div>
+        <div class="match-row-teams">🇸🇳 SEN <span class="vs">vs</span> IRQ 🇮🇶</div>
+        <div class="match-row-jor">J3</div>
+      </a></div>
+    </div><div class="card" id="grupo-J" style="margin-bottom:18px">
+      <div class="card-title"><span class="icon">🏟️</span> Grupo J</div>
+      <div class="pill-list" style="margin-bottom:14px"><div class="pill">🇦🇷 Argentina <span style="color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:11px">#1</span></div><div class="pill">🇩🇿 Argelia <span style="color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:11px">#28</span></div><div class="pill">🇦🇹 Austria <span style="color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:11px">#24</span></div><div class="pill">🇯🇴 Jordania <span style="color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:11px">#63</span></div></div>
+      <div class="match-list"><a class="match-row" href="partidos/arg-vs-alg.html">
+        <div class="match-row-date">Mar 16 Jun<br>20:00</div>
+        <div class="match-row-teams">🇦🇷 ARG <span class="vs">vs</span> ALG 🇩🇿</div>
+        <div class="match-row-jor">J1</div>
+      </a><a class="match-row" href="partidos/aut-vs-jor.html">
+        <div class="match-row-date">Mar 16 Jun<br>23:00</div>
+        <div class="match-row-teams">🇦🇹 AUT <span class="vs">vs</span> JOR 🇯🇴</div>
+        <div class="match-row-jor">J1</div>
+      </a><a class="match-row" href="partidos/arg-vs-aut.html">
+        <div class="match-row-date">Lun 22 Jun<br>12:00</div>
+        <div class="match-row-teams">🇦🇷 ARG <span class="vs">vs</span> AUT 🇦🇹</div>
+        <div class="match-row-jor">J2</div>
+      </a><a class="match-row" href="partidos/jor-vs-alg.html">
+        <div class="match-row-date">Lun 22 Jun<br>22:00</div>
+        <div class="match-row-teams">🇯🇴 JOR <span class="vs">vs</span> ALG 🇩🇿</div>
+        <div class="match-row-jor">J2</div>
+      </a><a class="match-row" href="partidos/alg-vs-aut.html">
+        <div class="match-row-date">Sáb 27 Jun<br>21:00</div>
+        <div class="match-row-teams">🇩🇿 ALG <span class="vs">vs</span> AUT 🇦🇹</div>
+        <div class="match-row-jor">J3</div>
+      </a><a class="match-row" href="partidos/jor-vs-arg.html">
+        <div class="match-row-date">Sáb 27 Jun<br>21:00</div>
+        <div class="match-row-teams">🇯🇴 JOR <span class="vs">vs</span> ARG 🇦🇷</div>
+        <div class="match-row-jor">J3</div>
+      </a></div>
+    </div><div class="card" id="grupo-K" style="margin-bottom:18px">
+      <div class="card-title"><span class="icon">🏟️</span> Grupo K</div>
+      <div class="pill-list" style="margin-bottom:14px"><div class="pill">🇵🇹 Portugal <span style="color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:11px">#5</span></div><div class="pill">🇨🇩 R.D. del Congo <span style="color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:11px">#46</span></div><div class="pill">🇺🇿 Uzbekistán <span style="color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:11px">#50</span></div><div class="pill">🇨🇴 Colombia <span style="color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:11px">#13</span></div></div>
+      <div class="match-list"><a class="match-row" href="partidos/por-vs-cod.html">
+        <div class="match-row-date">Mié 17 Jun<br>12:00</div>
+        <div class="match-row-teams">🇵🇹 POR <span class="vs">vs</span> COD 🇨🇩</div>
+        <div class="match-row-jor">J1</div>
+      </a><a class="match-row" href="partidos/uzb-vs-col.html">
+        <div class="match-row-date">Mié 17 Jun<br>21:00</div>
+        <div class="match-row-teams">🇺🇿 UZB <span class="vs">vs</span> COL 🇨🇴</div>
+        <div class="match-row-jor">J1</div>
+      </a><a class="match-row" href="partidos/por-vs-uzb.html">
+        <div class="match-row-date">Mar 23 Jun<br>12:00</div>
+        <div class="match-row-teams">🇵🇹 POR <span class="vs">vs</span> UZB 🇺🇿</div>
+        <div class="match-row-jor">J2</div>
+      </a><a class="match-row" href="partidos/col-vs-cod.html">
+        <div class="match-row-date">Mar 23 Jun<br>21:00</div>
+        <div class="match-row-teams">🇨🇴 COL <span class="vs">vs</span> COD 🇨🇩</div>
+        <div class="match-row-jor">J2</div>
+      </a><a class="match-row" href="partidos/col-vs-por.html">
+        <div class="match-row-date">Sáb 27 Jun<br>18:30</div>
+        <div class="match-row-teams">🇨🇴 COL <span class="vs">vs</span> POR 🇵🇹</div>
+        <div class="match-row-jor">J3</div>
+      </a><a class="match-row" href="partidos/cod-vs-uzb.html">
+        <div class="match-row-date">Sáb 27 Jun<br>18:30</div>
+        <div class="match-row-teams">🇨🇩 COD <span class="vs">vs</span> UZB 🇺🇿</div>
+        <div class="match-row-jor">J3</div>
+      </a></div>
+    </div><div class="card" id="grupo-L" style="margin-bottom:18px">
+      <div class="card-title"><span class="icon">🏟️</span> Grupo L</div>
+      <div class="pill-list" style="margin-bottom:14px"><div class="pill">🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inglaterra <span style="color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:11px">#4</span></div><div class="pill">🇭🇷 Croacia <span style="color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:11px">#11</span></div><div class="pill">🇬🇭 Ghana <span style="color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:11px">#73</span></div><div class="pill">🇵🇦 Panamá <span style="color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:11px">#34</span></div></div>
+      <div class="match-list"><a class="match-row" href="partidos/eng-vs-cro.html">
+        <div class="match-row-date">Mié 17 Jun<br>15:00</div>
+        <div class="match-row-teams">🏴󠁧󠁢󠁥󠁮󠁧󠁿 ENG <span class="vs">vs</span> CRO 🇭🇷</div>
+        <div class="match-row-jor">J1</div>
+      </a><a class="match-row" href="partidos/gha-vs-pan.html">
+        <div class="match-row-date">Mié 17 Jun<br>18:00</div>
+        <div class="match-row-teams">🇬🇭 GHA <span class="vs">vs</span> PAN 🇵🇦</div>
+        <div class="match-row-jor">J1</div>
+      </a><a class="match-row" href="partidos/eng-vs-gha.html">
+        <div class="match-row-date">Mar 23 Jun<br>15:00</div>
+        <div class="match-row-teams">🏴󠁧󠁢󠁥󠁮󠁧󠁿 ENG <span class="vs">vs</span> GHA 🇬🇭</div>
+        <div class="match-row-jor">J2</div>
+      </a><a class="match-row" href="partidos/pan-vs-cro.html">
+        <div class="match-row-date">Mar 23 Jun<br>18:00</div>
+        <div class="match-row-teams">🇵🇦 PAN <span class="vs">vs</span> CRO 🇭🇷</div>
+        <div class="match-row-jor">J2</div>
+      </a><a class="match-row" href="partidos/pan-vs-eng.html">
+        <div class="match-row-date">Sáb 27 Jun<br>16:00</div>
+        <div class="match-row-teams">🇵🇦 PAN <span class="vs">vs</span> ENG 🏴󠁧󠁢󠁥󠁮󠁧󠁿</div>
+        <div class="match-row-jor">J3</div>
+      </a><a class="match-row" href="partidos/cro-vs-gha.html">
+        <div class="match-row-date">Sáb 27 Jun<br>16:00</div>
+        <div class="match-row-teams">🇭🇷 CRO <span class="vs">vs</span> GHA 🇬🇭</div>
+        <div class="match-row-jor">J3</div>
+      </a></div>
+    </div>
+</div>
+<footer>
+  Análisis estadístico de entretenimiento · BetStats no es una casa de apuestas ni presta asesoría financiera · Juega con responsabilidad
+</footer>
+</body>
+</html>
